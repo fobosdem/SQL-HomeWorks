@@ -1,3 +1,6 @@
+USE HumanResources
+go
+
 --(1) сортировка в обратном порядке, по количеству людей в отделе
 SELECT d.Name, (SELECT COUNT(1) FROM Employee WHERE DepartmentId = d.Id) AS [Employees in departments]
 FROM Department d
@@ -21,14 +24,22 @@ join Employee empl on empl.DepartmentId = dp.Id
 WHERE empl.Salary = (SELECT MAX(emp.Salary) FROM Employee emp WHERE emp.DepartmentId = dp.Id);
 
 --(5)Найти список отделов с максимальной суммарной зарплатой сотрудников
-SELECT TOP 1 dp.Name, (SELECT SUM(emp.Salary) FROM Employee emp WHERE emp.DepartmentId = dp.Id) AS Sal
-FROM Department dp
-ORDER BY Sal DESC;
+SELECT d.Name, SUM(e.Salary) AS SalaryOfDep -- имя департамента и средняя зарплата по нему
+FROM Employee e
+LEFT JOIN Department d ON d.Id = e.DepartmentId
+GROUP BY d.Name
+HAVING SUM(e.Salary) = (SELECT MAX(SalTabl.maxsal) AS hight
+			FROM (SELECT SUM(em.Salary) AS maxsal
+				FROM Employee em
+				GROUP BY em.DepartmentId) SalTabl);
+
+--HAVING SUM(em.Salary) = ALL (SELECT SUM(e.Salary) FROM Employee e GROUP BY e.DepartmentId);
 
 --(6)Вывести список сотрудников, не имеющих назначенного руководителя, работающего в том-же отделе
-SELECT emp.ChiefId, emp.Name, emp.DepartmentId AS [Departm Id of empl]
+SELECT emp.ChiefId, emp.Name, emp.DepartmentId AS [Departm Id of empl], chief.Name AS [Chief Name], chief.DepartmentId
 FROM Employee emp
-WHERE emp.ChiefId IS NULL OR emp.DepartmentId != (SELECT chief.DepartmentId FROM Employee chief WHERE chief.Id = emp.ChiefId);
+LEFT JOIN Employee chief ON chief.Id = emp.ChiefId
+WHERE emp.ChiefId IS NULL OR emp.DepartmentId != chief.DepartmentId;
 
 
 --(7)SQL-запрос, чтобы найти вторую самую высокую зарплату работника
