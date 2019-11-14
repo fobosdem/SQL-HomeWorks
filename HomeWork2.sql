@@ -4,27 +4,20 @@ select Category from dbo.Sheet1$ group by Category;
 --создание таблицы категорий
 	CREATE TABLE [dbo].[Category](
 		[Id] [int] IDENTITY(1,1) PRIMARY KEY,
-		[Catagory] [nvarchar] (100) NOT NULL
+		[Catagory] [nvarchar] (100) NOT NULL,
+		[ParentCategoryId] [int] NULL
 	);
 	ALTER TABLE [dbo].[Category] ADD UNIQUE ([Catagory]);
+	ALTER TABLE [dbo].[Category] WITH CHECK ADD FOREIGN KEY([ParentCategoryId]) REFERENCES [dbo].[Category] ([Id]);
 
 --наполнение категорий
 insert into dbo.Category
-select Category from dbo.Sheet1$ group by Category;
+select Category, NULL from dbo.Sheet1$ group by Category;
 
---создание таблицы сабкатегорий
-	CREATE TABLE [dbo].[SubCategory](
-		[Id] [int] IDENTITY(1,1) PRIMARY KEY,
-		[SubCatagory] [nvarchar] (100) NOT NULL,
-		[Category Id] [int] NOT NULL
-	);
-	ALTER TABLE [dbo].[SubCategory] ADD UNIQUE ([SubCatagory]);
-	ALTER TABLE [dbo].[SubCategory] WITH CHECK ADD FOREIGN KEY([Category Id]) REFERENCES [dbo].[Category] ([Id]);
-
---наполнение таблицы сабкатегорий
-insert into dbo.[SubCategory]
-select db.[Sub-Category], cat.Id  from dbo.Sheet1$ db
-left join dbo.Category cat ON cat.Catagory = db.Category
+--наполнение таблицы категорий сабкаегориями
+insert into dbo.[Category]
+select db.[Sub-Category], cat.Id from dbo.Sheet1$ db
+left join dbo.[Category] cat ON cat.Catagory = db.Category
 group by db.[Sub-Category], cat.Id;
 
 --Создание таблицы продуктов
